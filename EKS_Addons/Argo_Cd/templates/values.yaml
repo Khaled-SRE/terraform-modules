@@ -1,0 +1,32 @@
+configs:
+  cm:
+    # -- Enable exec feature in Argo UI
+    exec.enabled: True
+  rbac:
+    policy.csv: |
+      p, role:admin, applications, *, *, allow
+      p, role:admin, clusters, get, *, allow
+      p, role:admin, exec, create, *, allow
+
+    policy.default: role:admin
+
+server:
+  service:
+    type: NodePort
+
+  ingress:
+    enabled: true
+    ingressClassName: alb
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/certificate-arn: ${CERTIFICATE_ARN}  
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/backend-protocol: HTTP
+      alb.ingress.kubernetes.io/group.name: ${ingress_group_name}
+    hosts:
+      - ${ARGOCD_DOMAIN}  
+    paths:
+      - /
+    pathType: Prefix
+
