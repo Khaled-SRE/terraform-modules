@@ -1,5 +1,5 @@
 resource "aws_iam_role" "load_balancer_controller_role" {
-  name = "${var.eks_role_name}-ALB-ROLE-v1"
+  name = "${var.eks_role_name}-ALB-ROLE"
 
   assume_role_policy = <<POLICY
 {

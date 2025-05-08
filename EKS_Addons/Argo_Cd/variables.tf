@@ -1,7 +1,13 @@
 variable "version" {
-  description = "The chart version"
-  type    = string
-  default = "5.27.3"
+  description = "The version of the Argo CD Helm chart"
+  type        = string
+  default     = "5.27.3"
+}
+
+variable "rollouts_version" {
+  description = "The version of the Argo Rollouts Helm chart"
+  type        = string
+  default     = "2.21.0"
 }
 
 variable "argocd_domain_name" {
@@ -15,5 +21,18 @@ variable "certificate_arn" {
 }
 
 variable "ingress_group_name" {
-  type = string
+  description = "The name of the ingress group for ALB"
+  type        = string
+}
+
+variable "namespace" {
+  description = "The Kubernetes namespace to deploy Argo CD"
+  type        = string
+  default     = "argocd"
+}
+
+variable "tags" {
+  description = "A map of tags to add to all resources"
+  type        = map(string)
+  default     = {}
 }

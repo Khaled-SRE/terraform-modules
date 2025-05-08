@@ -1,45 +1,91 @@
-data "template_file" "service_account" {
-  template = file("${path.module}/templates/alb-ingress-service-account.yaml")
-
-  vars = {
-    eks_alb_role_arn = "${var.eks_alb_role_arn}"
+resource "kubernetes_namespace" "aws_load_balancer_controller" {
+  metadata {
+    name = var.namespace
+    labels = {
+      "app.kubernetes.io/name"    = "aws-load-balancer-controller"
+      "app.kubernetes.io/part-of" = "aws-load-balancer-controller"
+    }
   }
 }
 
-resource "null_resource" "alb_ingress_config" {
-  depends_on = [var.addon_depends_on_nodegroup_no_taint]
-
-  provisioner "local-exec" {
-    command = <<EOT
-            kubectl apply -k "github.com/aws/eks-charts/stable/aws-load-balancer-controller//crds?ref=master"
-            echo  '${data.template_file.service_account.rendered}' | kubectl apply -f -
-    EOT
-  }
-  provisioner "local-exec" {
-    when    = destroy
-    command = <<EOT
-            kubectl delete -k "github.com/aws/eks-charts/stable/aws-load-balancer-controller//crds?ref=master"
-            kubectl delete serviceaccount -n kube-system aws-load-balancer-controller
-    EOT
+resource "kubernetes_service_account" "aws_load_balancer_controller" {
+  metadata {
+    name      = "aws-load-balancer-controller"
+    namespace = kubernetes_namespace.aws_load_balancer_controller.metadata[0].name
+    labels = {
+      "app.kubernetes.io/name"      = "aws-load-balancer-controller"
+      "app.kubernetes.io/component" = "controller"
+    }
+    annotations = {
+      "eks.amazonaws.com/role-arn" = var.eks_alb_role_arn
+    }
   }
 }
 
-resource "helm_release" "alb-ingress" {
-  name       = "alb-ingress"
+resource "helm_release" "aws_load_balancer_controller" {
+  name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
-  namespace  = "kube-system"
-  depends_on = [null_resource.alb_ingress_config]
+  namespace  = kubernetes_namespace.aws_load_balancer_controller.metadata[0].name
+  version    = var.chart_version
+
   set {
     name  = "clusterName"
     value = var.cluster_name
   }
+
   set {
     name  = "serviceAccount.create"
     value = false
   }
+
   set {
     name  = "serviceAccount.name"
-    value = "aws-load-balancer-controller"
+    value = kubernetes_service_account.aws_load_balancer_controller.metadata[0].name
   }
+
+  set {
+    name  = "region"
+    value = var.aws_region
+  }
+
+  set {
+    name  = "vpcId"
+    value = var.vpc_id
+  }
+
+  set {
+    name  = "image.repository"
+    value = "602401143452.dkr.ecr.${var.aws_region}.amazonaws.com/amazon/aws-load-balancer-controller"
+  }
+
+  set {
+    name  = "replicaCount"
+    value = var.replica_count
+  }
+
+  set {
+    name  = "resources.requests.cpu"
+    value = var.resources_requests_cpu
+  }
+
+  set {
+    name  = "resources.requests.memory"
+    value = var.resources_requests_memory
+  }
+
+  set {
+    name  = "resources.limits.cpu"
+    value = var.resources_limits_cpu
+  }
+
+  set {
+    name  = "resources.limits.memory"
+    value = var.resources_limits_memory
+  }
+
+  depends_on = [
+    kubernetes_namespace.aws_load_balancer_controller,
+    kubernetes_service_account.aws_load_balancer_controller
+  ]
 }

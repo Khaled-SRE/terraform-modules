@@ -1,22 +1,21 @@
-resource "aws_route53_zone" "main" {
-  name          = var.domain_name
-  tags          = var.tags
-  force_destroy = true
+resource "aws_route53_zone" "this" {
+  name    = var.domain
+  comment = coalesce(var.description, "Managed by Terraform for external-dns")
 
-  # Check if vpc_id is provided before adding the vpc block
   dynamic "vpc" {
-    for_each = var.vpc_id != null ? [1] : []
+    for_each = var.private_zone != null ? [1] : []
+
     content {
-      vpc_id = var.vpc_id
+      vpc_id     = var.private_zone.vpc_id
+      vpc_region = var.private_zone.vpc_region
     }
   }
-}
 
-resource "aws_route53_record" "dns_records" {
-  for_each = var.records
-  zone_id = aws_route53_zone.main.zone_id
-  name    = each.key
-  type    = each.value.type
-  ttl     = each.value.ttl
-  records = each.value.records
+  tags = merge(
+    var.tags,
+    {
+      "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+      "kubernetes.io/role/external-dns"           = "true"
+    }
+  )
 }

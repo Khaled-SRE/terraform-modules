@@ -1,17 +1,16 @@
-
 data "aws_caller_identity" "this" {}
 
 data "aws_eks_cluster" "this" {
   name = var.cluster_name
 }
+
 data "aws_eks_cluster_auth" "aws_iam_authenticator" {
   name = data.aws_eks_cluster.this.name
 }
 
-
 resource "helm_release" "external-dns" {
   name       = "external-dns"
-  namespace  = "kube-system"
+  namespace  = var.namespace
   repository = "https://charts.bitnami.com/bitnami"
   chart      = "external-dns"
   version    = var.version
@@ -23,7 +22,7 @@ resource "helm_release" "external-dns" {
 
   set {
     name  = "serviceAccount.name"
-    value = "external-dns"
+    value = var.service_account_name
   }
 
   set {
@@ -47,38 +46,81 @@ resource "helm_release" "external-dns" {
   }
 
   set {
-    name  = "txtOwnerId" # TXT record identifier
+    name  = "txtOwnerId"
     value = "external-dns"
   }
+
+  set {
+    name  = "interval"
+    value = "1m"
+  }
+
+  set {
+    name  = "registry"
+    value = "txt"
+  }
+
+  set {
+    name  = "logLevel"
+    value = "info"
+  }
+
+  set {
+    name  = "logFormat"
+    value = "json"
+  }
+
+  set {
+    name  = "aws.assumeRoleArn"
+    value = aws_iam_role.external_dns.arn
+  }
+
+  set {
+    name  = "aws.zoneType"
+    value = var.zone_name
+  }
+
+  set {
+    name  = "aws.evaluateTargetHealth"
+    value = "true"
+  }
+
+  set {
+    name  = "aws.preferredTargetType"
+    value = "ip"
+  }
+
+  timeout = 600
 }
 
 resource "aws_iam_role" "external_dns" {
   name = var.external_dns_role_name
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Federated": "arn:aws:iam::${data.aws_caller_identity.this.account_id}:oidc-provider/${replace(data.aws_eks_cluster.this.identity[0].oidc[0].issuer, "https://", "")}"
-      },
-      "Action": "sts:AssumeRoleWithWebIdentity",
-      "Condition": {
-        "StringEquals": {
-          "${replace(data.aws_eks_cluster.this.identity[0].oidc[0].issuer, "https://", "")}:sub": "system:serviceaccount:kube-system:external-dns"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = "arn:aws:iam::${data.aws_caller_identity.this.account_id}:oidc-provider/${replace(data.aws_eks_cluster.this.identity[0].oidc[0].issuer, "https://", "")}"
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "${replace(data.aws_eks_cluster.this.identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
+          }
         }
       }
+    ]
+  })
+
+  tags = merge(
+    var.tags,
+    {
+      "ServiceAccount" = var.service_account_name
+      "Namespace"      = var.namespace
+      "ManagedBy"      = "terraform"
     }
-  ]
-}
-  EOF
-  tags = {
-    Terraform = "true"
-  }
-  lifecycle {
-    ignore_changes = all
-  }
+  )
 }
 
 resource "aws_iam_role_policy_attachment" "external_dns" {
@@ -88,32 +130,32 @@ resource "aws_iam_role_policy_attachment" "external_dns" {
 
 resource "aws_iam_policy" "external_dns" {
   name        = "${var.external_dns_role_name}_policy"
-  description = "Policy using OIDC to give the EKS external dns ServiceAccount permissions to update Route53"
+  description = "Policy for external-dns to manage Route53 records"
 
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-  {
-     "Effect": "Allow",
-     "Action": [
-       "route53:ChangeResourceRecordSets"
-     ],
-     "Resource": [
-       "arn:aws:route53:::hostedzone/*"
-     ]
-   },
-   {
-     "Effect": "Allow",
-     "Action": [
-       "route53:ListHostedZones",
-       "route53:ListResourceRecordSets"
-     ],
-     "Resource": [
-       "*"
-     ]
-   }
-  ]
-}
-EOF
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "route53:ChangeResourceRecordSets"
+        ]
+        Resource = [
+          "arn:aws:route53:::hostedzone/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "route53:ListHostedZones",
+          "route53:ListResourceRecordSets"
+        ]
+        Resource = [
+          "*"
+        ]
+      }
+    ]
+  })
+
+  tags = var.tags
 }
