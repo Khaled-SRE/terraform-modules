@@ -70,5 +70,69 @@ resource "helm_release" "aws_load_balancer_controller" {
     value = var.resources_limits_memory
   }
 
+  # Security and ALB settings
+  set {
+    name  = "enableShield"
+    value = "true"
+  }
+
+  set {
+    name  = "enableWafv2"
+    value = "true"
+  }
+
+  set {
+    name  = "defaultTargetType"
+    value = "ip"
+  }
+
+  set {
+    name  = "ingressClass"
+    value = "alb"
+  }
+
+  set {
+    name  = "ingressClassDefault"
+    value = "true"
+  }
+
+  # Public subnet configuration
+  set {
+    name  = "subnets.public"
+    value = "{${join(",", var.public_subnet_ids)}}"
+  }
+
+  # Security group settings
+  set {
+    name  = "securityGroup.create"
+    value = "true"
+  }
+
+  set {
+    name  = "securityGroup.name"
+    value = "${var.cluster_name}-alb-sg"
+  }
+
+  # ALB security settings
+  set {
+    name  = "loadBalancerAttributes.routing.http.drop_invalid_header_fields.enabled"
+    value = "true"
+  }
+
+  set {
+    name  = "loadBalancerAttributes.routing.http.x_amzn_tls_version_and_cipher_suite.enabled"
+    value = "true"
+  }
+
+  set {
+    name  = "loadBalancerAttributes.routing.http.xff_client_port.enabled"
+    value = "true"
+  }
+
+  set {
+    name  = "loadBalancerAttributes.routing.http.xff_header_processing.mode"
+    value = "append"
+  }
+
   depends_on = [kubernetes_service_account.aws_load_balancer_controller]
 }

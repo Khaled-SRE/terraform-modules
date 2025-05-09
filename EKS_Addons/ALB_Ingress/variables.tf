@@ -11,7 +11,7 @@ variable "cluster_name" {
 variable "chart_version" {
   description = "Version of the Helm chart"
   type        = string
-  default     = "1.4.8"
+  default     = "1.5.4"
 }
 
 variable "aws_region" {
@@ -22,6 +22,11 @@ variable "aws_region" {
 variable "vpc_id" {
   description = "ID of the VPC for the EKS cluster"
   type        = string
+}
+
+variable "public_subnet_ids" {
+  description = "List of public subnet IDs for the ALB"
+  type        = list(string)
 }
 
 variable "replica_count" {
@@ -60,6 +65,6 @@ variable "tags" {
   default     = {}
 }
 
-variable addon_depends_on_nodegroup_no_taint {
+variable "addon_depends_on_nodegroup_no_taint" {
   type = string
 }
