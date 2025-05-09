@@ -11,9 +11,8 @@ variable "waf_description" {
 variable "waf_rules" {
   description = "List of WAF rules to apply"
   type = list(object({
-    name        = string
-    priority    = number
-    override_action = string
+    name     = string
+    priority = number
     statement = object({
       managed_rule_group_statement = object({
         name        = string
