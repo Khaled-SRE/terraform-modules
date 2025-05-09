@@ -2,8 +2,7 @@ configs:
   cm:
     # -- Enable exec feature in Argo UI
     exec.enabled: true
-    # -- Timeout for application operations
-    timeout.reconciliation: 180s
+  
 
   rbac:
     policy.csv: |
@@ -23,14 +22,11 @@ server:
     enabled: true
     ingressClassName: alb
     annotations:
-      alb.ingress.kubernetes.io/scheme: internet-facing
-      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
-      alb.ingress.kubernetes.io/certificate-arn: ${CERTIFICATE_ARN}
-      alb.ingress.kubernetes.io/target-type: ip
-      alb.ingress.kubernetes.io/backend-protocol: HTTP
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+      alb.ingress.kubernetes.io/scheme: internal
+      alb.ingress.kubernetes.io/target-type: instance
+      alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
       alb.ingress.kubernetes.io/group.name: ${ingress_group_name}
-      alb.ingress.kubernetes.io/load-balancer-attributes: routing.http.drop_invalid_header_fields.enabled=true
-      alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
       alb.ingress.kubernetes.io/subnets: ${SUBNET_IDS}
       alb.ingress.kubernetes.io/security-groups: ${SECURITY_GROUP_IDS}
     hosts:
@@ -41,5 +37,3 @@ server:
 
   extraArgs:
     - --insecure
-    - --rootpath
-    - /

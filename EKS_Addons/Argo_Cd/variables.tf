@@ -10,10 +10,6 @@ variable "rollouts_version" {
   default     = "2.35.0"
 }
 
-variable "certificate_arn" {
-  description = "ARN of the ACM certificate for ArgoCD"
-  type        = string
-}
 
 variable "argocd_domain_name" {
   description = "Domain name for ArgoCD"
