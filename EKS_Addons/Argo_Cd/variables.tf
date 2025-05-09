@@ -1,7 +1,7 @@
-variable "version" {
-  description = "The version of the Argo CD Helm chart"
+variable "chart_version" {
+  description = "Version of the Argo CD Helm chart"
   type        = string
-  default     = "5.27.3"
+  default     = "5.51.4"
 }
 
 variable "rollouts_version" {

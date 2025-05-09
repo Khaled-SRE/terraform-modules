@@ -4,13 +4,13 @@ resource "kubernetes_namespace" "argocd" {
   }
 }
 
-resource "helm_release" "argo-cd" {
+resource "helm_release" "argocd" {
   name             = "argocd"
   repository       = "https://argoproj.github.io/argo-helm"
   chart            = "argo-cd"
   namespace        = kubernetes_namespace.argocd.metadata[0].name
   create_namespace = false
-  version          = var.version
+  version          = var.chart_version
   timeout          = 1200
 
   values = [
@@ -37,5 +37,5 @@ resource "helm_release" "argo-rollouts" {
     value = true
   }
 
-  depends_on = [helm_release.argo-cd]
+  depends_on = [helm_release.argocd]
 }

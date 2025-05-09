@@ -11,9 +11,9 @@ data "aws_eks_cluster_auth" "aws_iam_authenticator" {
 resource "helm_release" "external-dns" {
   name       = "external-dns"
   namespace  = var.namespace
-  repository = "https://charts.bitnami.com/bitnami"
+  repository = "https://kubernetes-sigs.github.io/external-dns"
   chart      = "external-dns"
-  version    = var.version
+  version    = var.chart_version
 
   set {
     name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"

@@ -1,7 +1,7 @@
-variable "version" {
-    type        = string
-    default     = "6.5.6"
-    description = "Version of the external-dns Helm chart"
+variable "chart_version" {
+  description = "Version of the External DNS Helm chart"
+  type        = string
+  default     = "1.13.1"
 }
 
 variable "domain" {
