@@ -1,27 +1,27 @@
 variable "chart_version" {
-  description = "Version of the Argo CD Helm chart"
+  description = "Version of the ArgoCD Helm chart"
   type        = string
-  default     = "5.51.4"
+  default     = "5.46.7"
 }
 
 variable "rollouts_version" {
-  description = "The version of the Argo Rollouts Helm chart"
+  description = "Version of the Argo Rollouts Helm chart"
   type        = string
-  default     = "2.21.0"
-}
-
-variable "argocd_domain_name" {
-  description = "The domain name used to expose ArgoCD via ALB"
-  type        = string
+  default     = "2.35.0"
 }
 
 variable "certificate_arn" {
-  description = "ACM certificate ARN for ALB HTTPS listener"
+  description = "ARN of the ACM certificate for ArgoCD"
+  type        = string
+}
+
+variable "argocd_domain_name" {
+  description = "Domain name for ArgoCD"
   type        = string
 }
 
 variable "ingress_group_name" {
-  description = "The name of the ingress group for ALB"
+  description = "Name of the ingress group"
   type        = string
 }
 
@@ -35,4 +35,14 @@ variable "tags" {
   description = "A map of tags to add to all resources"
   type        = map(string)
   default     = {}
+}
+
+variable "subnet_ids" {
+  description = "List of subnet IDs for the ALB"
+  type        = list(string)
+}
+
+variable "security_group_ids" {
+  description = "List of security group IDs for the ALB"
+  type        = list(string)
 }
