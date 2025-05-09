@@ -15,7 +15,7 @@ output "helm_release_status" {
 
 output "namespace" {
   description = "The namespace where the AWS Load Balancer Controller is installed"
-  value       = kubernetes_namespace.aws_load_balancer_controller.metadata[0].name
+  value       = "kube-system"
 }
 
 output "service_account_name" {

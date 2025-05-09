@@ -8,56 +8,50 @@ variable "cluster_name" {
   type        = string
 }
 
-variable "namespace" {
-  description = "Kubernetes namespace to deploy the AWS Load Balancer Controller"
-  type        = string
-  default     = "kube-system"
-}
-
 variable "chart_version" {
-  description = "Version of the AWS Load Balancer Controller Helm chart"
+  description = "Version of the Helm chart"
   type        = string
   default     = "1.4.8"
 }
 
 variable "aws_region" {
-  description = "AWS region where the EKS cluster is deployed"
+  description = "AWS region for the EKS cluster"
   type        = string
 }
 
 variable "vpc_id" {
-  description = "ID of the VPC where the EKS cluster is deployed"
+  description = "ID of the VPC for the EKS cluster"
   type        = string
 }
 
 variable "replica_count" {
-  description = "Number of AWS Load Balancer Controller replicas"
+  description = "Number of replicas"
   type        = number
   default     = 2
 }
 
 variable "resources_requests_cpu" {
-  description = "CPU request for the AWS Load Balancer Controller"
-  type        = string
-  default     = "0.25"
-}
-
-variable "resources_requests_memory" {
-  description = "Memory request for the AWS Load Balancer Controller"
-  type        = string
-  default     = "256Mi"
-}
-
-variable "resources_limits_cpu" {
-  description = "CPU limit for the AWS Load Balancer Controller"
+  description = "CPU request for the controller"
   type        = string
   default     = "0.5"
 }
 
-variable "resources_limits_memory" {
-  description = "Memory limit for the AWS Load Balancer Controller"
+variable "resources_requests_memory" {
+  description = "Memory request for the controller"
   type        = string
   default     = "512Mi"
+}
+
+variable "resources_limits_cpu" {
+  description = "CPU limit for the controller"
+  type        = string
+  default     = "1"
+}
+
+variable "resources_limits_memory" {
+  description = "Memory limit for the controller"
+  type        = string
+  default     = "1Gi"
 }
 
 variable "tags" {

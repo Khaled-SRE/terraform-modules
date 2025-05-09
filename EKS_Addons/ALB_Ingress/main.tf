@@ -1,21 +1,7 @@
-resource "kubernetes_namespace" "aws_load_balancer_controller" {
-  metadata {
-    name = var.namespace
-    labels = {
-      "app.kubernetes.io/name"    = "aws-load-balancer-controller"
-      "app.kubernetes.io/part-of" = "aws-load-balancer-controller"
-    }
-  }
-}
-
 resource "kubernetes_service_account" "aws_load_balancer_controller" {
   metadata {
     name      = "aws-load-balancer-controller"
-    namespace = kubernetes_namespace.aws_load_balancer_controller.metadata[0].name
-    labels = {
-      "app.kubernetes.io/name"      = "aws-load-balancer-controller"
-      "app.kubernetes.io/component" = "controller"
-    }
+    namespace = "kube-system"
     annotations = {
       "eks.amazonaws.com/role-arn" = var.eks_alb_role_arn
     }
@@ -26,7 +12,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
-  namespace  = kubernetes_namespace.aws_load_balancer_controller.metadata[0].name
+  namespace  = "kube-system"
   version    = var.chart_version
 
   set {
@@ -36,7 +22,7 @@ resource "helm_release" "aws_load_balancer_controller" {
 
   set {
     name  = "serviceAccount.create"
-    value = false
+    value = "false"
   }
 
   set {
@@ -84,8 +70,5 @@ resource "helm_release" "aws_load_balancer_controller" {
     value = var.resources_limits_memory
   }
 
-  depends_on = [
-    kubernetes_namespace.aws_load_balancer_controller,
-    kubernetes_service_account.aws_load_balancer_controller
-  ]
+  depends_on = [kubernetes_service_account.aws_load_balancer_controller]
 }
