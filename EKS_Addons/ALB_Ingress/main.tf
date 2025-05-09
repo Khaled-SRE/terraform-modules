@@ -13,13 +13,13 @@ resource "null_resource" "alb_ingress_config" {
 
   provisioner "local-exec" {
     command = <<EOT
-            kubectl apply -k "github.com/aws/eks-charts/stable/aws-load-balancer-controller//crds?ref=master"
+            kubectl apply -k "github.com/aws/eks-charts/stable/aws-load-balancer-controller/crds?ref=master"
     EOT
   }
   provisioner "local-exec" {
     when    = destroy
     command = <<EOT
-            kubectl delete -k "github.com/aws/eks-charts/stable/aws-load-balancer-controller//crds?ref=master"
+            kubectl delete -k "github.com/aws/eks-charts/stable/aws-load-balancer-controller/crds?ref=master"
     EOT
   }
 }
