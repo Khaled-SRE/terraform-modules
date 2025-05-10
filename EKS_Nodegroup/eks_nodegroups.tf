@@ -1,37 +1,3 @@
-resource "aws_security_group" "node_group_sg" {
-  name        = "${var.cluster_name}-node-group-sg"
-  description = "Security group for EKS node group"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port       = 0
-    to_port         = 65535
-    protocol        = "tcp"
-    security_groups = [var.eks_security_group_id]
-    description     = "Allow traffic from EKS cluster"
-  }
-
-  # Allow traffic from any ALB in the VPC
-  ingress {
-    from_port   = 0
-    to_port     = 65535
-    protocol    = "tcp"
-    cidr_blocks = var.vpc_cidr_blocks
-    description = "Allow traffic from within VPC (for ALB)"
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${var.cluster_name}-node-group-sg"
-  }
-}
-
 resource "aws_eks_node_group" "node_groups_with_taint" {
   cluster_name    = var.cluster_name
   node_group_name = var.node_group_name
