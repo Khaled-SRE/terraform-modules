@@ -77,3 +77,18 @@ variable "use_taint" {
 variable "eks_cluster_arn" {
   type = string
 }
+
+variable "vpc_id" {
+  description = "VPC ID where the node group will be created"
+  type        = string
+}
+
+variable "alb_security_group_id" {
+  description = "Security group ID of the ALB"
+  type        = string
+}
+
+variable "eks_security_group_id" {
+  description = "Security group ID of the EKS cluster"
+  type        = string
+}
