@@ -17,6 +17,7 @@ resource "helm_release" "argocd" {
     templatefile("${path.module}/templates/values.yaml", {
       ARGOCD_DOMAIN      = var.argocd_domain_name
       ingress_group_name = var.ingress_group_name
+      CERTIFICATE_ARN    = var.certificate_arn
       SUBNET_IDS         = join(",", var.subnet_ids)
       SECURITY_GROUP_IDS = join(",", var.security_group_ids)
     })
