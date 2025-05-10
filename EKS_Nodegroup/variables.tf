@@ -83,9 +83,9 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "alb_security_group_id" {
-  description = "Security group ID of the ALB"
-  type        = string
+variable "vpc_cidr_blocks" {
+  description = "List of CIDR blocks for the VPC"
+  type        = list(string)
 }
 
 variable "eks_security_group_id" {
